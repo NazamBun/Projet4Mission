@@ -43,8 +43,10 @@ class LoginViewModel @Inject constructor(private val repository: LoginRepository
     fun onLoginClicked(){
         viewModelScope.launch {
             _uiState.update { currentState -> currentState.copy(isLoading = true) }
+            //TODO: Appeler le repository pour effectuer la connexion
             _navigationEvent.send(NavigationEvent.NavigateToHome)
             _uiState.update { currentState -> currentState.copy(isLoading = false) }
         }
+
     }
 }
