@@ -1,7 +1,9 @@
 package com.aura.viewmodel.login
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aura.data.login.LoginRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,25 +30,58 @@ class LoginViewModel @Inject constructor(private val repository: LoginRepository
 
     fun onIdentifierChanged(identifier: String){
         _uiState.update { currentState ->
-                currentState.copy(identifier = identifier,
-                                  isLoginButtonEnabled = identifier.isNotEmpty() && currentState.password.isNotEmpty())
+                currentState.copy(
+                    identifier = identifier,
+                    isLoginButtonEnabled = identifier.isNotEmpty() && currentState.password.isNotEmpty())
         }
     }
 
     fun onPasswordChanged(password: String){
         _uiState.update { currentState ->
-                currentState.copy(password = password,
-                                  isLoginButtonEnabled = password.isNotEmpty() && currentState.identifier.isNotEmpty())
+                currentState.copy(
+                    password = password,
+                    isLoginButtonEnabled = password.isNotEmpty() && currentState.identifier.isNotEmpty())
         }
     }
 
     fun onLoginClicked(){
+        Log.d(TAG, "onLoginClicked called")
         viewModelScope.launch {
             _uiState.update { currentState -> currentState.copy(isLoading = true) }
-            //TODO: Appeler le repository pour effectuer la connexion
-            _navigationEvent.send(NavigationEvent.NavigateToHome)
+
+            Log.d(TAG, "Sending login request to repository")
+
+            // Appeler le repository pour effectuer la connexion
+            val response = try {
+                repository.login(LoginRequest(_uiState.value.identifier, _uiState.value.password))
+            } catch (e: Exception) {
+                Log.e(TAG, "Login request failed with exception: ${e.localizedMessage}")
+                // Gestion des exceptions, par exemple, pour les erreurs de réseau
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        isLoading = false,
+                        error = "Erreur de connexion : ${e.localizedMessage}"
+                    )
+                }
+                return@launch
+            }
+
+            Log.d(TAG, "Received response: ${response.isSuccessful}, ${response.body()?.granted}")
+
+            if (response.isSuccessful && response.body()?.granted == true) {
+                Log.d(TAG, "Login successful, navigating to home")
+                _navigationEvent.send(NavigationEvent.NavigateToHome)
+            } else {
+                Log.d(TAG, "Login failed, showing error message")
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        isLoading = false,
+                        error = "Identifiants incorrects"
+                    )
+                }
+            }
             _uiState.update { currentState -> currentState.copy(isLoading = false) }
         }
-
     }
+
 }
