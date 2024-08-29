@@ -45,43 +45,43 @@ class LoginViewModel @Inject constructor(private val repository: LoginRepository
     }
 
     fun onLoginClicked(){
-        Log.d(TAG, "onLoginClicked called")
         viewModelScope.launch {
-            _uiState.update { currentState -> currentState.copy(isLoading = true) }
-
-            Log.d(TAG, "Sending login request to repository")
+            _uiState.update { currentState -> currentState.copy(isLoading = true, showErrorMessage = false, showRetryButton = false) }
 
             // Appeler le repository pour effectuer la connexion
             val response = try {
                 repository.login(LoginRequest(_uiState.value.identifier, _uiState.value.password))
             } catch (e: Exception) {
-                Log.e(TAG, "Login request failed with exception: ${e.localizedMessage}")
                 // Gestion des exceptions, par exemple, pour les erreurs de réseau
                 _uiState.update { currentState ->
                     currentState.copy(
                         isLoading = false,
-                        error = "Erreur de connexion : ${e.localizedMessage}"
+                        error = "Erreur de connexion : ${e.localizedMessage}",
+                        showErrorMessage = true,
+                        showRetryButton = true
                     )
                 }
                 return@launch
             }
 
-            Log.d(TAG, "Received response: ${response.isSuccessful}, ${response.body()?.granted}")
-
             if (response.isSuccessful && response.body()?.granted == true) {
-                Log.d(TAG, "Login successful, navigating to home")
-                _navigationEvent.send(NavigationEvent.NavigateToHome)
+                _navigationEvent.send(NavigationEvent.ShowSuccessAndNavigate)
             } else {
-                Log.d(TAG, "Login failed, showing error message")
                 _uiState.update { currentState ->
                     currentState.copy(
                         isLoading = false,
-                        error = "Identifiants incorrects"
+                        error = "Identifiants incorrects",
+                        showErrorMessage = true,
+                        showRetryButton = true
                     )
                 }
             }
+
             _uiState.update { currentState -> currentState.copy(isLoading = false) }
         }
     }
 
+    fun onRetryClicked() {
+        onLoginClicked() // Réessayer la connexion
+    }
 }
