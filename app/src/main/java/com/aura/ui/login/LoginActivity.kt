@@ -2,8 +2,6 @@ package com.aura.ui.login
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
@@ -20,22 +18,14 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
-/**
- * The login activity for the app.
- */
 @AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
 
-    /**
-     * The binding for the login layout.
-     */
     private lateinit var binding: ActivityLoginBinding
     private val viewModel: LoginViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -71,18 +61,18 @@ class LoginActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             viewModel.navigationEvent.collect { event ->
-                when(event) {
-                    is NavigationEvent.ShowSuccessAndNavigate -> {
-                        // Afficher le Snackbar en haut de l'écran
-                        showSnackbarAtTop("Authentification réussie!")
-
-                        delay(1000)
-                        // Naviguer vers l'écran d'accueil après le message
+                when (event) {
+                    is NavigationEvent.ShowSnackbar -> {
+                        showSnackbarAtTop(event.message)
+                    }
+                    is NavigationEvent.NavigateToHome -> {
+                        delay(1000)  // Attendre 1 seconde avant la navigation
                         startActivity(Intent(this@LoginActivity, HomeActivity::class.java))
                         finish()
                     }
-                    is NavigationEvent.NavigateToHome -> {
-                        // Si jamais cet événement est utilisé, naviguer directement vers l'écran d'accueil
+                    is NavigationEvent.ShowSuccessAndNavigate -> {
+                        showSnackbarAtTop(event.message)
+                        delay(1500)  // Afficher le Snackbar pendant 1.5 seconde avant la navigation
                         startActivity(Intent(this@LoginActivity, HomeActivity::class.java))
                         finish()
                     }
@@ -90,20 +80,13 @@ class LoginActivity : AppCompatActivity() {
             }
         }
     }
-    /**
-     * Affiche un Snackbar en haut de l'écran.
-     */
+
     private fun showSnackbarAtTop(message: String) {
         val snackbar = Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG)
-
-        // Accéder à la vue du Snackbar et modifier ses LayoutParams
         val view = snackbar.view
         val params = view.layoutParams as FrameLayout.LayoutParams
-
-        // Positionner le Snackbar en haut de l'écran
         params.gravity = Gravity.TOP
-        params.setMargins(0, 0, 0, 0)  // Ajuster les marges si nécessaire
-
+        params.setMargins(0, 0, 0, 0)
         view.layoutParams = params
         snackbar.show()
     }

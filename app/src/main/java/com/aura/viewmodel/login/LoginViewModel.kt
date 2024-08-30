@@ -1,9 +1,9 @@
 package com.aura.viewmodel.login
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aura.data.login.LoginRequest
+import com.aura.data.repository.LoginRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,38 +13,35 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.aura.data.repository.LoginRepository
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(private val repository: LoginRepository): ViewModel(){
-
-    companion object {
-        private const val TAG = "LoginViewModel"
-    }
+class LoginViewModel @Inject constructor(private val repository: LoginRepository) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
-    private val _navigationEvent = Channel<NavigationEvent> (Channel.CONFLATED)
+    private val _navigationEvent = Channel<NavigationEvent>(Channel.CONFLATED)
     val navigationEvent = _navigationEvent.receiveAsFlow()
 
-    fun onIdentifierChanged(identifier: String){
+    fun onIdentifierChanged(identifier: String) {
         _uiState.update { currentState ->
-                currentState.copy(
-                    identifier = identifier,
-                    isLoginButtonEnabled = identifier.isNotEmpty() && currentState.password.isNotEmpty())
+            currentState.copy(
+                identifier = identifier,
+                isLoginButtonEnabled = identifier.isNotEmpty() && currentState.password.isNotEmpty()
+            )
         }
     }
 
-    fun onPasswordChanged(password: String){
+    fun onPasswordChanged(password: String) {
         _uiState.update { currentState ->
-                currentState.copy(
-                    password = password,
-                    isLoginButtonEnabled = password.isNotEmpty() && currentState.identifier.isNotEmpty())
+            currentState.copy(
+                password = password,
+                isLoginButtonEnabled = password.isNotEmpty() && currentState.identifier.isNotEmpty()
+            )
         }
     }
 
-    fun onLoginClicked(){
+    fun onLoginClicked() {
         viewModelScope.launch {
             _uiState.update { currentState -> currentState.copy(isLoading = true, showErrorMessage = false, showRetryButton = false) }
 
@@ -52,7 +49,6 @@ class LoginViewModel @Inject constructor(private val repository: LoginRepository
             val response = try {
                 repository.login(LoginRequest(_uiState.value.identifier, _uiState.value.password))
             } catch (e: Exception) {
-                // Gestion des exceptions, par exemple, pour les erreurs de réseau
                 _uiState.update { currentState ->
                     currentState.copy(
                         isLoading = false,
@@ -65,7 +61,8 @@ class LoginViewModel @Inject constructor(private val repository: LoginRepository
             }
 
             if (response.isSuccessful && response.body()?.granted == true) {
-                _navigationEvent.send(NavigationEvent.ShowSuccessAndNavigate)
+                _navigationEvent.send(NavigationEvent.ShowSnackbar("Authentification réussie!"))
+                _navigationEvent.send(NavigationEvent.NavigateToHome)
             } else {
                 _uiState.update { currentState ->
                     currentState.copy(
