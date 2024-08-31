@@ -1,4 +1,4 @@
-package com.aura.data.login
+package com.aura.data.bo.login
 
 data class LoginRequest(
     val id: String,

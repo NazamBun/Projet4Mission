@@ -1,9 +1,11 @@
 package com.aura.viewmodel.login
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aura.data.login.LoginRequest
-import com.aura.data.repository.LoginRepository
+import com.aura.data.bo.account.AccountRequest
+import com.aura.data.bo.login.LoginRequest
+import com.aura.data.repository.MyRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +17,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(private val repository: LoginRepository) : ViewModel() {
+class LoginViewModel @Inject constructor(private val repository: MyRepository) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
@@ -44,6 +46,13 @@ class LoginViewModel @Inject constructor(private val repository: LoginRepository
     fun onLoginClicked() {
         viewModelScope.launch {
             _uiState.update { currentState -> currentState.copy(isLoading = true, showErrorMessage = false, showRetryButton = false) }
+
+
+
+            val responseAccount = repository.account(AccountRequest("1234"))
+            Log.d("LoginViewModel", "onLoginClicked: $responseAccount")
+
+
 
             // Appeler le repository pour effectuer la connexion
             val response = try {

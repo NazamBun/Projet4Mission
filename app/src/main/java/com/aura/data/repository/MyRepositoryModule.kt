@@ -9,12 +9,12 @@ import dagger.hilt.android.scopes.ViewModelScoped
 
 @Module
 @InstallIn(ViewModelComponent::class)
-object LoginRepositoryModule {
+object MyRepositoryModule {
 
     @Provides
     @ViewModelScoped
-    fun bindLoginRepository(apiService: ApiService): LoginRepository {
-        return LoginRepositoryImpl(apiService)
+    fun bindLoginRepository(apiService: ApiService): MyRepository {
+        return MyRepositoryImpl(apiService)
     }
 
 }
