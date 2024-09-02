@@ -22,4 +22,5 @@ class MyRepositoryImpl(private val apiService: ApiService) : MyRepository {
     override suspend fun transfer(request: TransferRequest): Response<TransferResponse> {
         return apiService.transfer(request)
     }
+
 }
