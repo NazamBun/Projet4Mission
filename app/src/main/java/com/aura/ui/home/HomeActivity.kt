@@ -1,17 +1,25 @@
 package com.aura.ui.home
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.aura.R
 import com.aura.databinding.ActivityHomeBinding
+import com.aura.databinding.ActivityLoginBinding
 import com.aura.ui.login.LoginActivity
 import com.aura.ui.transfer.TransferActivity
+import com.aura.viewmodel.home.HomeViewModel
+import com.aura.viewmodel.login.LoginViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 /**
  * The home activity for the app.
@@ -20,6 +28,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class HomeActivity : AppCompatActivity()
 {
 
+  private val viewModel: HomeViewModel by viewModels()
   /**
    * The binding for the home layout.
    */
@@ -33,6 +42,7 @@ class HomeActivity : AppCompatActivity()
       //TODO
     }
 
+  @SuppressLint("SetTextI18n")
   override fun onCreate(savedInstanceState: Bundle?)
   {
     super.onCreate(savedInstanceState)
@@ -43,7 +53,32 @@ class HomeActivity : AppCompatActivity()
     val balance = binding.balance
     val transfer = binding.transfer
 
-    balance.text = "2654,54€"
+    balance.text = "indéfini"
+    viewModel.getAccounts()
+
+    /*
+    lifecycleScope.launch {
+      viewModel.uiState.collect { uiState ->
+        loading.visibility = if (uiState.isLoading) View.VISIBLE else View.GONE
+        login.isEnabled = uiState.isLoginButtonEnabled
+
+        if (uiState.showErrorMessage) {
+          errorText.visibility = View.VISIBLE
+          errorText.text = uiState.error
+          retryButton.visibility = View.VISIBLE
+        } else {
+          errorText.visibility = View.GONE
+          retryButton.visibility = View.GONE
+        }
+      }
+    }
+
+    */
+
+    viewModel.accounts.observe(this) { accounts ->
+      val balanceSum = accounts.map { it.balance }.sum()
+      balance.text = balanceSum.toString()+" €"
+    }
 
     transfer.setOnClickListener {
       startTransferActivityForResult.launch(Intent(this@HomeActivity, TransferActivity::class.java))
