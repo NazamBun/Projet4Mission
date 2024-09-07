@@ -15,8 +15,8 @@ class MyRepositoryImpl(private val apiService: ApiService) : MyRepository {
         return apiService.login(request)
     }
 
-    override suspend fun account(request: AccountRequest): Response<List<AccountResponse>> {
-        return apiService.account(request)
+    override suspend fun accounts(request: AccountRequest): Response<List<AccountResponse>> {
+        return apiService.accounts(request.id)
     }
 
     override suspend fun transfer(request: TransferRequest): Response<TransferResponse> {

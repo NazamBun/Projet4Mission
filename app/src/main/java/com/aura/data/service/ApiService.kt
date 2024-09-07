@@ -10,13 +10,14 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface ApiService {
     @POST("/login")
     suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
 
-    @GET("/account")
-    suspend fun account(@Body request: AccountRequest): Response<List<AccountResponse>>
+    @GET("/accounts/{id}")
+    suspend fun accounts(@Path("id") id: String): Response<List<AccountResponse>>
 
     @POST("/transfer")
     suspend fun transfer(@Body request: TransferRequest): Response<TransferResponse>

@@ -47,13 +47,6 @@ class LoginViewModel @Inject constructor(private val repository: MyRepository) :
         viewModelScope.launch {
             _uiState.update { currentState -> currentState.copy(isLoading = true, showErrorMessage = false, showRetryButton = false) }
 
-
-
-            val responseAccount = repository.account(AccountRequest("1234"))
-            Log.d("LoginViewModel", "onLoginClicked: $responseAccount")
-
-
-
             // Appeler le repository pour effectuer la connexion
             val response = try {
                 repository.login(LoginRequest(_uiState.value.identifier, _uiState.value.password))

@@ -10,6 +10,6 @@ import retrofit2.Response
 
 interface MyRepository {
     suspend fun login(request: LoginRequest): Response<LoginResponse>
-    suspend fun account(request: AccountRequest): Response<List<AccountResponse>>
+    suspend fun accounts(request: AccountRequest): Response<List<AccountResponse>>
     suspend fun transfer(request: TransferRequest): Response<TransferResponse>
 }
