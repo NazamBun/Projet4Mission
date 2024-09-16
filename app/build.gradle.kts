@@ -66,6 +66,22 @@ dependencies {
   androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
   implementation("com.google.android.material:material:1.12.0")
 
+  // Coroutines for asynchronous programming
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.2")
+
+  // JUnit for testing
+  testImplementation("junit:junit:4.13.2")
+
+  // Mockito for mocking dependencies
+  testImplementation("org.mockito:mockito-core:3.12.4")
+
+  // Mockito Kotlin for easier mocking of Kotlin classes
+  testImplementation("org.mockito.kotlin:mockito-kotlin:3.2.0")
+
+  // MockWebServer
+  testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
+
 }
 
 

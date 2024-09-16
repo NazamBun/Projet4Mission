@@ -2,6 +2,7 @@ package com.aura.ui.login
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
@@ -36,6 +37,8 @@ class LoginActivity : AppCompatActivity() {
         val errorText = binding.errorText
         val retryButton = binding.retryButton
 
+        Log.d("test", "onCreate: ")
+
         lifecycleScope.launch {
             viewModel.uiState.collect { uiState ->
                 loading.visibility = if (uiState.isLoading) View.VISIBLE else View.GONE
@@ -55,7 +58,13 @@ class LoginActivity : AppCompatActivity() {
         identifier.addTextChangedListener { viewModel.onIdentifierChanged(it.toString()) }
         password.addTextChangedListener { viewModel.onPasswordChanged(it.toString()) }
 
-        login.setOnClickListener { viewModel.onLoginClicked() }
+        login.setOnClickListener {
+            viewModel.onLoginClicked()
+            val sharedPreferences = getSharedPreferences("user", MODE_PRIVATE)
+            val editor = sharedPreferences.edit()
+            editor.putString("identifier", identifier.text.toString())
+            editor.commit()
+        }
 
         retryButton.setOnClickListener { viewModel.onRetryClicked() }
 
@@ -65,11 +74,13 @@ class LoginActivity : AppCompatActivity() {
                     is NavigationEvent.ShowSnackbar -> {
                         showSnackbarAtTop(event.message)
                     }
+
                     is NavigationEvent.NavigateToHome -> {
                         delay(1000)  // Attendre 1 seconde avant la navigation
                         startActivity(Intent(this@LoginActivity, HomeActivity::class.java))
                         finish()
                     }
+
                     is NavigationEvent.ShowSuccessAndNavigate -> {
                         showSnackbarAtTop(event.message)
                         delay(1500)  // Afficher le Snackbar pendant 1.5 seconde avant la navigation

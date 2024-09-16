@@ -27,16 +27,29 @@ class HomeViewModel @Inject constructor(private val repository: MyRepository): V
     private val _accounts = MutableLiveData<List<AccountResponse>>()
     val accounts: LiveData<List<AccountResponse>> = _accounts
 
-    fun getAccounts() {
+    fun getAccounts(login: String) {
         viewModelScope.launch {
-            _uiState.update { currentState -> currentState.copy(isLoading = true, showErrorMessage = false, showRetryButton = false) }
+            _uiState.update { currentState -> currentState.copy(isLoading = true, showRetryButton = false) }
             try {
-                val response = repository.accounts(AccountRequest(id = "1234"))
-                _accounts.value = response.body()
-                _uiState.update { currentState -> currentState.copy(isLoading = false) }
+                val response = repository.accounts(AccountRequest(id = login))
+                if (response.isSuccessful) {
+                    _accounts.value = response.body()
+                    _uiState.update { currentState -> currentState.copy(isLoading = false) }
+                } else {
+                    _uiState.update { currentState -> currentState.copy(isLoading = false, error = "Impossible de contacter le serveur", showRetryButton = true) }
+                }
+
             } catch (e: Exception) {
-                _uiState.update { currentState -> currentState.copy(isLoading = false, showErrorMessage = true, showRetryButton = true) }
+                _uiState.update { currentState -> currentState.copy(isLoading = false, showRetryButton = true) }
             }
         }
+    }
+
+    fun resetError() {
+        _uiState.update { currentState -> currentState.copy(error = "") }
+    }
+
+    fun resetRetry() {
+        _uiState.update { currentState -> currentState.copy(showRetryButton = false) }
     }
 }
